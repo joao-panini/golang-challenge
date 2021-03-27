@@ -19,7 +19,7 @@ type Route struct {
 //Config configura todas as rotas do router
 func Config(r *mux.Router) *mux.Router {
 	routes := accountRoutes
-	routes = append(routes, loginRoute)
+	routes = append(routes, loginRoute, transferRoutes[1], transferRoutes[0])
 	for _, route := range routes {
 
 		if route.AuthRequired {

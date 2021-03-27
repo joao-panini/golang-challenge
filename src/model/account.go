@@ -19,13 +19,13 @@ type Account struct {
 func (account *Account) validate(stage string) error {
 
 	if account.Name == "" {
-		return errors.New("Nome é obrigatorio")
+		return errors.New("nome é obrigatorio")
 	}
 	if account.Cpf == "" {
-		return errors.New("Cpf é obrigatorio")
+		return errors.New("cpf é obrigatorio")
 	}
 	if account.Secret == "" && stage == "cadastro" {
-		return errors.New("Secret é obrigatorio")
+		return errors.New("secret é obrigatorio")
 	}
 	return nil
 }
@@ -51,5 +51,18 @@ func (account *Account) Prepare(stage string) error {
 	if erro := account.format(stage); erro != nil {
 		return erro
 	}
+	return nil
+}
+
+func (account *Account) Deposit(amount float64) {
+	account.Balance += amount
+}
+
+func (account *Account) Withdraw(amount float64) error {
+	//check for min balance invariant
+	if account.Balance-amount < 0 {
+		return errors.New("not enough money to withdraw")
+	}
+	account.Balance -= amount
 	return nil
 }

@@ -47,7 +47,7 @@ func (repository accounts) GetAllAccounts() ([]model.Account, error) {
 	}
 	defer rows.Close()
 
-	var accounts []model.Account
+	var accountsList []model.Account
 	for rows.Next() {
 		var account model.Account
 
@@ -61,9 +61,9 @@ func (repository accounts) GetAllAccounts() ([]model.Account, error) {
 			return nil, erro
 		}
 
-		accounts = append(accounts, account)
+		accountsList = append(accountsList, account)
 	}
-	return accounts, nil
+	return accountsList, nil
 }
 
 func (repository accounts) GetAccountBalanceById(ID uint64) (model.Account, error) {
@@ -105,3 +105,67 @@ func (repository accounts) GetAccountByCPF(cpf string) (model.Account, error) {
 	}
 	return account, nil
 }
+
+func (repository accounts) GetAccountByID(ID uint64) (model.Account, error) {
+	row, erro := repository.db.Query("select id,name,cpf,balance from accounts where id = ?", ID)
+	if erro != nil {
+		return model.Account{}, erro
+	}
+	defer row.Close()
+
+	var account model.Account
+	if row.Next() {
+		if erro = row.Scan(
+			&account.ID,
+			&account.Name,
+			&account.Cpf,
+			&account.Balance,
+		); erro != nil {
+			return model.Account{}, erro
+		}
+	}
+	return account, nil
+}
+
+func (repository accounts) UpdateAccount(ID uint64, account model.Account) error {
+	statement, erro := repository.db.Prepare(
+		"update accounts set name = ? where id = ?",
+	)
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro = statement.Exec(account.Name, ID); erro != nil {
+		return erro
+	}
+	return nil
+}
+
+func (repository accounts) UpdateAccountBalance(ID uint64, amount float64) error {
+	statement, erro := repository.db.Prepare(
+		"update accounts set balance = ? where id = ?",
+	)
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro = statement.Exec(amount, ID); erro != nil {
+		return erro
+	}
+	return nil
+}
+
+// func (repository accounts) UpdateAccountBalance(ID uint64, account model.Account) error {
+// 	statement, erro := repository.db.Prepare(
+// 		"update accounts set balance = ? where id = ?",
+
+// 	)
+// 	if erro != nil {
+// 		return erro
+// 	}
+// 	defer statement.Close()
+
+// 	if _, erro = statement.Exec(account.balance,ID)
+// }
