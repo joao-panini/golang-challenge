@@ -11,6 +11,7 @@ import (
 	"net/http"
 )
 
+//CreateTransaction realiza uma transação entre a conta conectada e a conta de destino vinda do request
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	bodyR, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
@@ -39,12 +40,12 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	acctRepository := repositories.NewAccountRepository(db)
-	fromAcct, erro := acctRepository.GetAccountByID(tokenID)
+	fromAcct, erro := acctRepository.FindByID(tokenID)
 	if erro != nil {
 		responses.Error(w, http.StatusBadRequest, erro)
 	}
 
-	toAcct, erro := acctRepository.GetAccountByID(transfer.ToAccountID)
+	toAcct, erro := acctRepository.FindByID(transfer.ToAccountID)
 	if erro != nil {
 		responses.Error(w, http.StatusBadRequest, erro)
 	}
@@ -55,10 +56,25 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 	toAcct.Deposit(transfer.Amount)
 
-	acctRepository.UpdateAccountBalance(tokenID, fromAcct.Balance)
+	erro = acctRepository.UpdateAccountBalance(tokenID, fromAcct.Balance)
+	if erro != nil {
+		responses.Error(w, http.StatusInternalServerError, erro)
+		return
+	}
 	acctRepository.UpdateAccountBalance(toAcct.ID, toAcct.Balance)
+	if erro != nil {
+		responses.Error(w, http.StatusInternalServerError, erro)
+		return
+	}
+
 	transferRepository := repositories.NewTransferRepository(db)
-	transferRepository.CreateTransaction(transfer)
+	transfer.ID, erro = transferRepository.Save(transfer)
+	if erro != nil {
+		responses.Error(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	responses.JSON(w, http.StatusCreated, transfer)
 
 }
 
@@ -77,9 +93,13 @@ func GetAllCurrentAcctTransactions(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	transferRepository := repositories.NewTransferRepository(db)
-	transfers, erro := transferRepository.GetAllTransfers(tokenID)
+	transfers, erro := transferRepository.FindAll(tokenID)
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
+		return
+	}
+	if transfers == nil {
+		responses.JSON(w, http.StatusNotFound, "Não há transferencias para esta conta.")
 		return
 	}
 

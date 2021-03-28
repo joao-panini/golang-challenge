@@ -5,6 +5,10 @@ import (
 	"database/sql"
 )
 
+type TransfersRepository interface {
+	Save(a model.Transfers) (uint64, error)
+	FindAll([]model.Transfers, error)
+}
 type transfers struct {
 	db *sql.DB
 }
@@ -12,7 +16,7 @@ type transfers struct {
 func NewTransferRepository(db *sql.DB) *transfers {
 	return &transfers{db}
 }
-func (repository transfers) CreateTransaction(transfer model.Transfers) (uint64, error) {
+func (repository transfers) Save(transfer model.Transfers) (uint64, error) {
 	statement, erro := repository.db.Prepare(
 		"insert into transfers (from_account_id,to_account_id,amount) values (?,?,?)",
 	)
@@ -34,7 +38,7 @@ func (repository transfers) CreateTransaction(transfer model.Transfers) (uint64,
 	return uint64(lastID), nil
 }
 
-func (repository transfers) GetAllTransfers(ID uint64) ([]model.Transfers, error) {
+func (repository transfers) FindAll(ID uint64) ([]model.Transfers, error) {
 	rows, erro := repository.db.Query(
 		"select * from transfers where from_account_id = ?",
 		ID,
@@ -62,5 +66,6 @@ func (repository transfers) GetAllTransfers(ID uint64) ([]model.Transfers, error
 
 		transfersList = append(transfersList, transfer)
 	}
+
 	return transfersList, nil
 }

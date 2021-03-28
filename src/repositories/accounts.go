@@ -3,28 +3,37 @@ package repositories
 import (
 	"api/src/model"
 	"database/sql"
-	"fmt"
 )
 
-type accounts struct {
+type AccountsRepository interface {
+	Save(model.Account) (uint64, error)
+	FindAll([]model.Account, error)
+	FindBalanceById(ID uint64) (model.Account, error)
+	FindByCPF(cpf string) (model.Account, error)
+	FindByID(ID uint64) (model.Account, error)
+	UpdateAccount(ID uint64, acct *model.Account) error
+	UpdateBalance(ID uint64, amount float64) error
+}
+
+type accountsRepoImpl struct {
 	db *sql.DB
 }
 
-func NewAccountRepository(db *sql.DB) *accounts {
-	return &accounts{db}
+func NewAccountRepository(db *sql.DB) *accountsRepoImpl {
+	return &accountsRepoImpl{db}
 }
 
-func (repository accounts) Create(account model.Account) (uint64, error) {
-	fmt.Println("estou aqui")
-	statement, erro := repository.db.Prepare(
-		"insert into accounts (Name,Cpf,Secret,Balance) values (?,?,?,?)",
+//Save
+func (r accountsRepoImpl) Save(account model.Account) (uint64, error) {
+	statement, erro := r.db.Prepare(
+		"insert into accounts (Name,Cpf,Secret) values (?,?,?)",
 	)
 	if erro != nil {
 		return 0, erro
 	}
 	defer statement.Close()
 
-	result, erro := statement.Exec(account.Name, account.Cpf, account.Secret, account.Balance)
+	result, erro := statement.Exec(account.Name, account.Cpf, account.Secret)
 	if erro != nil {
 		return 0, erro
 	}
@@ -37,7 +46,7 @@ func (repository accounts) Create(account model.Account) (uint64, error) {
 	return uint64(lastID), nil
 }
 
-func (repository accounts) GetAllAccounts() ([]model.Account, error) {
+func (repository accountsRepoImpl) FindAll() ([]model.Account, error) {
 	rows, erro := repository.db.Query(
 		"select id,name,cpf,balance,Created_at from accounts",
 	)
@@ -66,7 +75,7 @@ func (repository accounts) GetAllAccounts() ([]model.Account, error) {
 	return accountsList, nil
 }
 
-func (repository accounts) GetAccountBalanceById(ID uint64) (model.Account, error) {
+func (repository accountsRepoImpl) FindBalanceById(ID uint64) (model.Account, error) {
 	rows, erro := repository.db.Query(
 		"select balance from accounts where id = ?",
 		ID,
@@ -87,7 +96,7 @@ func (repository accounts) GetAccountBalanceById(ID uint64) (model.Account, erro
 	return account, nil
 }
 
-func (repository accounts) GetAccountByCPF(cpf string) (model.Account, error) {
+func (repository accountsRepoImpl) FindByCPF(cpf string) (model.Account, error) {
 	row, erro := repository.db.Query("select id, secret from accounts where cpf = ?", cpf)
 	if erro != nil {
 		return model.Account{}, erro
@@ -106,7 +115,7 @@ func (repository accounts) GetAccountByCPF(cpf string) (model.Account, error) {
 	return account, nil
 }
 
-func (repository accounts) GetAccountByID(ID uint64) (model.Account, error) {
+func (repository accountsRepoImpl) FindByID(ID uint64) (model.Account, error) {
 	row, erro := repository.db.Query("select id,name,cpf,balance from accounts where id = ?", ID)
 	if erro != nil {
 		return model.Account{}, erro
@@ -127,7 +136,7 @@ func (repository accounts) GetAccountByID(ID uint64) (model.Account, error) {
 	return account, nil
 }
 
-func (repository accounts) UpdateAccount(ID uint64, account model.Account) error {
+func (repository accountsRepoImpl) UpdateAccount(ID uint64, account *model.Account) error {
 	statement, erro := repository.db.Prepare(
 		"update accounts set name = ? where id = ?",
 	)
@@ -142,7 +151,7 @@ func (repository accounts) UpdateAccount(ID uint64, account model.Account) error
 	return nil
 }
 
-func (repository accounts) UpdateAccountBalance(ID uint64, amount float64) error {
+func (repository accountsRepoImpl) UpdateAccountBalance(ID uint64, amount float64) error {
 	statement, erro := repository.db.Prepare(
 		"update accounts set balance = ? where id = ?",
 	)
@@ -156,16 +165,3 @@ func (repository accounts) UpdateAccountBalance(ID uint64, amount float64) error
 	}
 	return nil
 }
-
-// func (repository accounts) UpdateAccountBalance(ID uint64, account model.Account) error {
-// 	statement, erro := repository.db.Prepare(
-// 		"update accounts set balance = ? where id = ?",
-
-// 	)
-// 	if erro != nil {
-// 		return erro
-// 	}
-// 	defer statement.Close()
-
-// 	if _, erro = statement.Exec(account.balance,ID)
-// }

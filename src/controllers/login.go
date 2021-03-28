@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-//Login autentica o usuario na aplicação
+//Login retorna o token na response para autenticar o usuario
 func Login(w http.ResponseWriter, r *http.Request) {
 	bodyR, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
@@ -34,7 +34,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repositories.NewAccountRepository(db)
-	dbAccount, erro := repository.GetAccountByCPF(account.Cpf)
+	dbAccount, erro := repository.FindByCPF(account.Cpf)
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
 		return

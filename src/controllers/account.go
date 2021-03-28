@@ -6,6 +6,7 @@ import (
 	"api/src/repositories"
 	"api/src/responses"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -13,8 +14,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//CreateAccount cria uma conta no banco de dados
+//CreateAccount creates an account on the database
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
+
 	bodyR, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		responses.Error(w, http.StatusUnprocessableEntity, erro)
@@ -25,7 +27,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 		responses.Error(w, http.StatusBadRequest, erro)
 		return
 	}
-
+	fmt.Println(account)
 	if erro = account.Prepare("cadastro"); erro != nil {
 		responses.Error(w, http.StatusBadRequest, erro)
 		return
@@ -39,7 +41,12 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repositories.NewAccountRepository(db)
-	account.ID, erro = repository.Create(account)
+	_, erro = repository.FindByCPF(account.Cpf)
+	if erro != nil {
+		responses.Error(w, http.StatusConflict, erro)
+	}
+
+	account.ID, erro = repository.Save(account)
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
 		return
@@ -48,6 +55,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, account)
 }
 
+//GetAccounts returns all accounts saved on the database to the response
 func GetAccounts(w http.ResponseWriter, r *http.Request) {
 	db, erro := database.Connect()
 	if erro != nil {
@@ -56,17 +64,15 @@ func GetAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	repository := repositories.NewAccountRepository(db)
-	accounts, erro := repository.GetAllAccounts()
+	accounts, erro := repository.FindAll()
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
 		return
 	}
-
 	responses.JSON(w, http.StatusOK, accounts)
-
-	w.Write([]byte("buscando accounts"))
 }
 
+//GetAccountBalanceById retorna o saldo da conta passada no parametro
 func GetAccountBalanceById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -84,7 +90,7 @@ func GetAccountBalanceById(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repositories.NewAccountRepository(db)
-	account, erro := repository.GetAccountBalanceById(accountID)
+	account, erro := repository.FindBalanceById(accountID)
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
 		return
@@ -114,54 +120,11 @@ func GetAccountByID(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repositories.NewAccountRepository(db)
-	account, erro = repository.GetAccountByID(account.ID)
+	account, erro = repository.FindByID(account.ID)
 	if erro != nil {
 		responses.Error(w, http.StatusInternalServerError, erro)
 		return
 	}
 
 	responses.JSON(w, http.StatusCreated, account)
-}
-
-func UpdateAccount(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-
-	accountID, erro := strconv.ParseUint(params["accountID"], 10, 64)
-	if erro != nil {
-		responses.Error(w, http.StatusBadRequest, erro)
-		return
-	}
-
-	bodyR, erro := ioutil.ReadAll(r.Body)
-	if erro != nil {
-		responses.Error(w, http.StatusUnprocessableEntity, erro)
-		return
-	}
-
-	var account model.Account
-	if erro = json.Unmarshal(bodyR, &account); erro != nil {
-		responses.Error(w, http.StatusBadRequest, erro)
-		return
-	}
-
-	if erro = account.Prepare("edit"); erro != nil {
-		responses.Error(w, http.StatusInternalServerError, erro)
-		return
-	}
-
-	db, erro := database.Connect()
-	if erro != nil {
-		responses.Error(w, http.StatusInternalServerError, erro)
-		return
-	}
-	defer db.Close()
-
-	repository := repositories.NewAccountRepository(db)
-	if erro = repository.UpdateAccount(accountID, account); erro != nil {
-		responses.Error(w, http.StatusInternalServerError, erro)
-		return
-	}
-
-	responses.JSON(w, http.StatusNoContent, nil)
-
 }
