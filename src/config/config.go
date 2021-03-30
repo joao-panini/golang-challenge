@@ -26,11 +26,13 @@ func Carregar() {
 	if erro != nil {
 		fmt.Println(erro)
 	}
-	ConnectionString = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
+	ConnectionString = fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
+		os.Getenv("MYSQL_HOST"),
 		os.Getenv("DB_NAME"),
 	)
+	fmt.Println(ConnectionString)
 
 	SecretKey = []byte(os.Getenv(string("SECRET_KEY")))
 

@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//CreateAccount creates an account on the database
+//CreateAccount cria uma conta no banco de dados
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	bodyR, erro := ioutil.ReadAll(r.Body)
@@ -55,7 +55,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusCreated, account)
 }
 
-//GetAccounts returns all accounts saved on the database to the response
+//GetAccounts retorna todas as contas do banco de dados
 func GetAccounts(w http.ResponseWriter, r *http.Request) {
 	db, erro := database.Connect()
 	if erro != nil {
@@ -73,6 +73,7 @@ func GetAccounts(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetAccountBalanceById retorna o saldo da conta passada no parametro
+//pode ser modificada para apenas retornar se o parametro passado na URL for o mesmo do da conta logada
 func GetAccountBalanceById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -99,6 +100,7 @@ func GetAccountBalanceById(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, account)
 }
 
+//GetAccountByID busca no banco de dados uma conta referente ao ID passado no request
 func GetAccountByID(w http.ResponseWriter, r *http.Request) {
 	bodyR, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {

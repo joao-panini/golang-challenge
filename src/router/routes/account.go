@@ -7,13 +7,13 @@ import (
 
 var accountRoutes = []Route{
 	{
-		Url:          "/account/createAccount",
+		Url:          "/accounts",
 		Method:       http.MethodPost,
 		Function:     controllers.CreateAccount,
 		AuthRequired: false,
 	},
 	{
-		Url:          "/account/GetAllAccounts",
+		Url:          "/accounts",
 		Method:       http.MethodGet,
 		Function:     controllers.GetAccounts,
 		AuthRequired: true,

@@ -78,6 +78,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//GetAllCurrentAcctTransactions retorna todas as transações do usuario logado
 func GetAllCurrentAcctTransactions(w http.ResponseWriter, r *http.Request) {
 	tokenID, erro := auth.ExtractAccountId(r)
 	if erro != nil {

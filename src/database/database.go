@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+//Connect faz a conexao com o banco
 func Connect() (*sql.DB, error) {
 	db, erro := sql.Open("mysql", config.ConnectionString)
 
@@ -18,5 +19,6 @@ func Connect() (*sql.DB, error) {
 		db.Close()
 		return nil, erro
 	}
+
 	return db, nil
 }

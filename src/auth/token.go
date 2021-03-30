@@ -40,6 +40,7 @@ func ValidateToken(r *http.Request) error {
 
 }
 
+//extractToken extrai o token do header
 func extractToken(r *http.Request) string {
 	token := r.Header.Get("Authorization")
 
@@ -49,6 +50,7 @@ func extractToken(r *http.Request) string {
 	return ""
 }
 
+//getVerifyKey retorna a chave secreta para criação de token
 func getVerifyKey(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("metodo de assinatura inesperado! %v", token.Header["alg"])

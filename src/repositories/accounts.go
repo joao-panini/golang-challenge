@@ -23,7 +23,6 @@ func NewAccountRepository(db *sql.DB) *accountsRepoImpl {
 	return &accountsRepoImpl{db}
 }
 
-//Save
 func (r accountsRepoImpl) Save(account model.Account) (uint64, error) {
 	statement, erro := r.db.Prepare(
 		"insert into accounts (Name,Cpf,Secret) values (?,?,?)",
