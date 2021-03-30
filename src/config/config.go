@@ -15,6 +15,7 @@ var (
 	SecretKey        []byte
 )
 
+//Carregar le o arquivo .env e inicializa as variaveis
 func Carregar() {
 	var erro error
 

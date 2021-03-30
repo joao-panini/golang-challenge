@@ -25,7 +25,6 @@ import (
 func main() {
 	config.Carregar()
 	r := router.CreateRouter()
-	fmt.Println(config.SecretKey)
 	fmt.Printf("Escutando na porta %d\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r))
 }

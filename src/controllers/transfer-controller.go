@@ -30,6 +30,9 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		responses.Error(w, http.StatusUnauthorized, erro)
 		return
 	}
+	if erro := transfer.Validate(); erro != nil {
+		responses.Error(w, http.StatusBadRequest, erro)
+	}
 
 	transfer.FromAccountID = tokenID
 	db, erro := database.Connect()
