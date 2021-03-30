@@ -1,9 +1,11 @@
 # golang-challenge
 
 Install
-  Go
-  Docker
-  docker-compose
+    Go
+
+    Docker
+    
+    docker-compose
   
  Usage
  
