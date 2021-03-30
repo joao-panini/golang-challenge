@@ -43,6 +43,7 @@ Endpoints
     localhost:6000/transfers (Put method) - Faz uma transferencia da conta logada para uma conta destino.
     
     *Para realizar transferencias utilize as contas criadas no arquivo sql.sql pois as contas novas são salvas com o saldo 0 no banco.
+    *Senha para as contas criadas: 1234
     {     
       "ToAccountId": 1,
       "amount": 100.0
